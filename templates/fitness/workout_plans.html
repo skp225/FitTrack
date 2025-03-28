@@ -1,0 +1,217 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Workout Plans - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-4">
+            <i class="fas fa-calendar-alt me-2"></i>Workout Plans
+        </h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'create_workout_plan' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Create Plan
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <ul class="nav nav-tabs" id="planTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="my-plans-tab" data-bs-toggle="tab" data-bs-target="#my-plans" type="button" role="tab" aria-controls="my-plans" aria-selected="true">
+                    <i class="fas fa-user me-1"></i>My Plans
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="public-plans-tab" data-bs-toggle="tab" data-bs-target="#public-plans" type="button" role="tab" aria-controls="public-plans" aria-selected="false">
+                    <i class="fas fa-globe me-1"></i>Public Plans
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="planTabsContent">
+            <!-- My Plans Tab -->
+            <div class="tab-pane fade show active" id="my-plans" role="tabpanel" aria-labelledby="my-plans-tab">
+                {% if user_plans %}
+                    <div class="row mt-4">
+                        {% for plan in user_plans %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ plan.title }}</h5>
+                                        <span class="badge {% if plan.difficulty == 'beginner' %}bg-success{% elif plan.difficulty == 'intermediate' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ plan.get_difficulty_display }}
+                                        </span>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ plan.description|truncatechars:100 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span><i class="fas fa-calendar-week me-1"></i> {{ plan.duration_weeks }} weeks</span>
+                                            <span><i class="fas fa-calendar-day me-1"></i> {{ plan.days.count }} days/week</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                        <a href="{% url 'workout_plan_detail' plan.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye me-1"></i>View Plan
+                                        </a>
+                                        {% if plan.is_public %}
+                                            <span class="badge bg-info align-self-center">Public</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary align-self-center">Private</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="card mt-4">
+                        <div class="card-body text-center py-5">
+                            <h3 class="mb-3">You haven't created any workout plans yet</h3>
+                            <p class="text-muted mb-4">Create your own custom workout plan or browse public plans.</p>
+                            <a href="{% url 'create_workout_plan' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-plus-circle me-1"></i>Create Your First Plan
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Public Plans Tab -->
+            <div class="tab-pane fade" id="public-plans" role="tabpanel" aria-labelledby="public-plans-tab">
+                <div class="card mt-4">
+                    <div class="card-header bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <h5 class="mb-0">Public Workout Plans</h5>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="d-flex justify-content-md-end">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary active filter-btn" data-filter="all">All</button>
+                                        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="beginner">Beginner</button>
+                                        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="intermediate">Intermediate</button>
+                                        <button type="button" class="btn btn-outline-primary filter-btn" data-filter="advanced">Advanced</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if public_plans %}
+                            <div class="row" id="public-plans-container">
+                                {% for plan in public_plans %}
+                                    <div class="col-md-6 col-lg-4 mb-4 plan-item" data-difficulty="{{ plan.difficulty }}">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">{{ plan.title }}</h5>
+                                                <span class="badge {% if plan.difficulty == 'beginner' %}bg-success{% elif plan.difficulty == 'intermediate' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ plan.get_difficulty_display }}
+                                                </span>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="card-text">{{ plan.description|truncatechars:100 }}</p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <span><i class="fas fa-calendar-week me-1"></i> {{ plan.duration_weeks }} weeks</span>
+                                                    <span><i class="fas fa-calendar-day me-1"></i> {{ plan.days.count }} days/week</span>
+                                                </div>
+                                                <p class="text-muted mt-2 mb-0">
+                                                    <small><i class="fas fa-user me-1"></i> Created by {{ plan.user.username }}</small>
+                                                </p>
+                                            </div>
+                                            <div class="card-footer">
+                                                <a href="{% url 'workout_plan_detail' plan.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>View Plan
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-3">No public workout plans available yet.</p>
+                                <p class="text-muted">Be the first to share a workout plan with the community!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Creating Effective Workout Plans</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-balance-scale me-2"></i>Balance</h5>
+                                <p class="card-text">Include a mix of exercises targeting different muscle groups. Avoid overtraining any single muscle group and ensure adequate recovery time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Progression</h5>
+                                <p class="card-text">Design your plan with progressive overload in mind. Gradually increase intensity, volume, or complexity over the weeks to continue making gains.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-user-cog me-2"></i>Personalization</h5>
+                                <p class="card-text">Tailor your plan to your specific goals, fitness level, and available equipment. The most effective plan is one you can consistently follow.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Filter public plans by difficulty
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const planItems = document.querySelectorAll('.plan-item');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // Get filter value
+                const filter = this.getAttribute('data-filter');
+                
+                // Show/hide plan items based on filter
+                planItems.forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-difficulty') === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

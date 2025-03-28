@@ -1,0 +1,166 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}{{ exercise.name }} - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-2">
+            {{ exercise.name }}
+        </h1>
+        <p class="text-muted">
+            <span class="badge {% if exercise.difficulty == 'beginner' %}bg-success{% elif exercise.difficulty == 'intermediate' %}bg-warning{% else %}bg-danger{% endif %} me-2">
+                {{ exercise.get_difficulty_display }}
+            </span>
+            <span class="badge bg-primary me-2">{{ exercise.get_muscle_group_display }}</span>
+            {% if exercise.equipment_required %}
+            <span class="badge bg-secondary">{{ exercise.equipment_required }}</span>
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'exercises' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Exercises
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Exercise Details</h5>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Description</h5>
+                <p class="card-text">{{ exercise.description }}</p>
+                
+                <h5 class="card-title mt-4">How to Perform</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-check-circle me-2 text-success"></i>Proper Form</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2"><i class="fas fa-circle me-2 text-primary"></i>Maintain proper posture throughout the movement</li>
+                                    <li class="mb-2"><i class="fas fa-circle me-2 text-primary"></i>Control the weight during both concentric and eccentric phases</li>
+                                    <li class="mb-2"><i class="fas fa-circle me-2 text-primary"></i>Focus on the target muscle group</li>
+                                    <li><i class="fas fa-circle me-2 text-primary"></i>Breathe properly - exhale during exertion</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-exclamation-triangle me-2 text-warning"></i>Common Mistakes</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled mb-0">
+                                    <li class="mb-2"><i class="fas fa-times-circle me-2 text-danger"></i>Using momentum instead of muscle control</li>
+                                    <li class="mb-2"><i class="fas fa-times-circle me-2 text-danger"></i>Improper range of motion</li>
+                                    <li class="mb-2"><i class="fas fa-times-circle me-2 text-danger"></i>Holding your breath</li>
+                                    <li><i class="fas fa-times-circle me-2 text-danger"></i>Using too much weight</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if exercise.demonstration_url %}
+                <div class="mt-4">
+                    <h5 class="card-title">Demonstration</h5>
+                    <div class="ratio ratio-16x9">
+                        <iframe src="{{ exercise.demonstration_url }}" title="{{ exercise.name }} demonstration" allowfullscreen></iframe>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bullseye me-2"></i>Target Muscles</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-center mb-3">
+                    <div class="muscle-diagram text-center">
+                        <!-- Placeholder for muscle diagram - in a real app, this could be a dynamic SVG -->
+                        <img src="https://via.placeholder.com/300x400?text=Muscle+Diagram" class="img-fluid rounded" alt="Muscle diagram">
+                    </div>
+                </div>
+                
+                <h6>Primary Muscles</h6>
+                <p>{{ exercise.get_muscle_group_display }}</p>
+                
+                <h6>Secondary Muscles</h6>
+                <p>Various stabilizing muscles depending on form and variation.</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-sliders-h me-2"></i>Variations</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <h6>Beginner</h6>
+                        <p class="mb-0 small">Modified version with assistance or reduced range of motion.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6>Intermediate</h6>
+                        <p class="mb-0 small">Standard version as described in the main instructions.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6>Advanced</h6>
+                        <p class="mb-0 small">Increased resistance, unstable surface, or added complexity.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Training Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-dumbbell me-2"></i>For Strength</h5>
+                                <p class="card-text">Use heavier weights with lower reps (4-6 reps per set). Focus on proper form and take longer rest periods between sets (2-3 minutes).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-running me-2"></i>For Endurance</h5>
+                                <p class="card-text">Use lighter weights with higher reps (15-20 reps per set). Keep rest periods shorter (30-60 seconds) to increase muscular endurance.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-expand-arrows-alt me-2"></i>For Hypertrophy</h5>
+                                <p class="card-text">Use moderate weights with moderate reps (8-12 reps per set). Focus on time under tension and moderate rest periods (60-90 seconds).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

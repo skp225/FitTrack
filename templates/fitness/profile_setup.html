@@ -1,0 +1,117 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Set Up Your Profile - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-cog me-2"></i>Set Up Your Profile</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="lead mb-4">Welcome to FitTrack! Let's set up your profile to personalize your fitness journey.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3 mb-md-0">
+                            <div class="mb-3">
+                                <label for="height" class="form-label">Height (cm)</label>
+                                <input type="number" step="0.1" min="50" max="250" name="height" id="height" class="form-control" placeholder="Enter your height in cm">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <input type="number" step="0.1" min="20" max="300" name="weight" id="weight" class="form-control" placeholder="Enter your weight in kg">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                <input type="date" name="date_of_birth" id="date_of_birth" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Fitness Level</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="fitness_level" id="beginner" value="beginner" checked>
+                                    <label class="form-check-label" for="beginner">
+                                        <strong>Beginner</strong> - New to fitness or returning after a long break
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="fitness_level" id="intermediate" value="intermediate">
+                                    <label class="form-check-label" for="intermediate">
+                                        <strong>Intermediate</strong> - Regular exercise for several months
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="fitness_level" id="advanced" value="advanced">
+                                    <label class="form-check-label" for="advanced">
+                                        <strong>Advanced</strong> - Consistent training for a year or more
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">What are your fitness goals?</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="goal_types" id="weight_loss" value="weight_loss">
+                                    <label class="form-check-label" for="weight_loss">Weight Loss</label>
+                                </div>
+                                <div id="weight_loss_target" class="ms-4 mt-2 d-none">
+                                    <label for="target_weight" class="form-label">Target Weight (kg)</label>
+                                    <input type="number" step="0.1" min="20" max="200" name="target_weight" id="target_weight" class="form-control form-control-sm">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="goal_types" id="muscle_gain" value="muscle_gain">
+                                    <label class="form-check-label" for="muscle_gain">Muscle Gain</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="goal_types" id="endurance" value="endurance">
+                                    <label class="form-check-label" for="endurance">Improve Endurance</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>Complete Setup
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Show/hide target weight input when weight loss goal is selected
+        const weightLossCheckbox = document.getElementById('weight_loss');
+        const weightLossTarget = document.getElementById('weight_loss_target');
+        
+        weightLossCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                weightLossTarget.classList.remove('d-none');
+            } else {
+                weightLossTarget.classList.add('d-none');
+            }
+        });
+    });
+</script>
+{% endblock %}

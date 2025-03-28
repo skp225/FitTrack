@@ -1,0 +1,191 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Add Progress - {{ goal.title }} - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-2">
+            <i class="fas fa-plus-circle me-2"></i>Add Progress
+        </h1>
+        <p class="text-muted">
+            <a href="{% url 'goal_detail' goal.id %}" class="text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i>Back to {{ goal.title }}
+            </a>
+        </p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Progress Details for "{{ goal.title }}"</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Current Progress: {{ goal.progress_percentage }}%</span>
+                        {% if goal.target_value %}
+                        <span>Target: {{ goal.target_value }} {{ goal.target_unit }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ goal.progress_percentage }}%;" 
+                            aria-valuenow="{{ goal.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="value" class="form-label">Value {% if goal.target_unit %}({{ goal.target_unit }}){% endif %}</label>
+                        <input type="number" step="0.01" name="value" id="value" class="form-control" required>
+                        {% if goal.goal_type == 'weight_loss' %}
+                        <div class="form-text">Enter your current weight.</div>
+                        {% elif goal.goal_type == 'endurance' %}
+                        <div class="form-text">Enter the distance you achieved.</div>
+                        {% elif goal.goal_type == 'strength' %}
+                        <div class="form-text">Enter the weight you lifted.</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" name="date" id="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">Notes (optional)</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Any additional notes about your progress"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Progress
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Previous Entries</h5>
+            </div>
+            <div class="card-body">
+                {% if progress_entries %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Value</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in progress_entries %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.value }} {% if goal.target_unit %}{{ goal.target_unit }}{% endif %}</td>
+                                    <td>{{ entry.notes|default:"" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted">No previous entries yet. This will be your first progress entry!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if goal.goal_type == 'weight_loss' %}
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Weight Loss</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Weigh yourself at the same time each day for consistency.</li>
+                    <li class="list-group-item">Normal weight fluctuations of 1-2 kg throughout the day are common.</li>
+                    <li class="list-group-item">Focus on the trend over time rather than daily changes.</li>
+                    <li class="list-group-item">Remember that muscle weighs more than fat - consider taking body measurements too.</li>
+                </ul>
+            </div>
+        </div>
+        {% elif goal.goal_type == 'endurance' %}
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Endurance Training</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Gradually increase your distance by no more than 10% each week.</li>
+                    <li class="list-group-item">Include both long, slow sessions and shorter, high-intensity workouts.</li>
+                    <li class="list-group-item">Rest days are important for recovery and preventing injury.</li>
+                    <li class="list-group-item">Stay hydrated and fuel properly before and after workouts.</li>
+                </ul>
+            </div>
+        </div>
+        {% elif goal.goal_type == 'strength' %}
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for Strength Training</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Focus on proper form before increasing weight.</li>
+                    <li class="list-group-item">Aim for progressive overload by gradually increasing weight or reps.</li>
+                    <li class="list-group-item">Allow 48 hours of recovery for muscle groups between strength sessions.</li>
+                    <li class="list-group-item">Ensure adequate protein intake to support muscle recovery and growth.</li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set maximum date for progress date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('max', today);
+        
+        {% if goal.goal_type == 'weight_loss' and goal.target_value %}
+        // For weight loss goals, show warning if entered value is below target
+        const valueInput = document.getElementById('value');
+        const targetValue = {{ goal.target_value }};
+        
+        valueInput.addEventListener('input', function() {
+            const enteredValue = parseFloat(this.value);
+            if (enteredValue && enteredValue <= targetValue) {
+                // Show congratulations message
+                if (!document.getElementById('target-reached-alert')) {
+                    const alert = document.createElement('div');
+                    alert.id = 'target-reached-alert';
+                    alert.className = 'alert alert-success mt-2';
+                    alert.innerHTML = '<i class="fas fa-trophy me-2"></i>Congratulations! You\'ve reached your target weight!';
+                    this.parentNode.appendChild(alert);
+                }
+            } else {
+                // Remove message if exists
+                const alert = document.getElementById('target-reached-alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

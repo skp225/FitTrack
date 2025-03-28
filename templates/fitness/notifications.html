@@ -1,0 +1,191 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Notifications - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-4">
+            <i class="fas fa-bell me-2"></i>Notifications
+        </h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <form method="post" action="{% url 'mark_all_read' %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-check-double me-1"></i>Mark All as Read
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-light">
+                <ul class="nav nav-tabs card-header-tabs" id="notificationTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">
+                            All
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="unread-tab" data-bs-toggle="tab" data-bs-target="#unread" type="button" role="tab" aria-controls="unread" aria-selected="false">
+                            Unread
+                            {% if unread_count > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_count }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body p-0">
+                <div class="tab-content" id="notificationTabsContent">
+                    <!-- All Notifications Tab -->
+                    <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                        {% if notifications %}
+                            <div class="list-group list-group-flush">
+                                {% for notification in notifications %}
+                                <div class="list-group-item list-group-item-action {% if not notification.is_read %}list-group-item-light{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1">
+                                            {% if not notification.is_read %}
+                                            <span class="badge bg-primary me-2">New</span>
+                                            {% endif %}
+                                            {{ notification.title }}
+                                        </h6>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <div class="d-flex justify-content-end">
+                                        {% if not notification.is_read %}
+                                        <form method="post" action="{% url 'mark_notification_read' notification.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check me-1"></i>Mark as Read
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-0">You don't have any notifications yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Unread Notifications Tab -->
+                    <div class="tab-pane fade" id="unread" role="tabpanel" aria-labelledby="unread-tab">
+                        {% if unread_notifications %}
+                            <div class="list-group list-group-flush">
+                                {% for notification in unread_notifications %}
+                                <div class="list-group-item list-group-item-action list-group-item-light">
+                                    <div class="d-flex w-100 justify-content-between align-items-center">
+                                        <h6 class="mb-1">
+                                            <span class="badge bg-primary me-2">New</span>
+                                            {{ notification.title }}
+                                        </h6>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <div class="d-flex justify-content-end">
+                                        <form method="post" action="{% url 'mark_notification_read' notification.id %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check me-1"></i>Mark as Read
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-0">You don't have any unread notifications.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>About Notifications</h5>
+            </div>
+            <div class="card-body">
+                <p>Notifications keep you informed about important events in your fitness journey:</p>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <i class="fas fa-trophy text-success me-2"></i>Goal achievements
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-calendar-check text-primary me-2"></i>Workout reminders
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-chart-line text-info me-2"></i>Progress milestones
+                    </li>
+                    <li class="list-group-item">
+                        <i class="fas fa-calendar-alt text-warning me-2"></i>New workout plan suggestions
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">Customize which notifications you receive:</p>
+                
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="goalAchievements" checked>
+                    <label class="form-check-label" for="goalAchievements">Goal Achievements</label>
+                </div>
+                
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="workoutReminders" checked>
+                    <label class="form-check-label" for="workoutReminders">Workout Reminders</label>
+                </div>
+                
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="progressMilestones" checked>
+                    <label class="form-check-label" for="progressMilestones">Progress Milestones</label>
+                </div>
+                
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="planSuggestions" checked>
+                    <label class="form-check-label" for="planSuggestions">Plan Suggestions</label>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="button" class="btn btn-primary" id="saveSettings">
+                        <i class="fas fa-save me-1"></i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle notification settings
+        const saveSettingsBtn = document.getElementById('saveSettings');
+        
+        saveSettingsBtn.addEventListener('click', function() {
+            // In a real application, this would save the settings to the server
+            // For now, just show a success message
+            alert('Notification settings saved successfully!');
+        });
+    });
+</script>
+{% endblock %}

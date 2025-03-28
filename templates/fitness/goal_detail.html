@@ -1,0 +1,174 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}{{ goal.title }} - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-2">
+            {{ goal.title }}
+        </h1>
+        <p class="text-muted">
+            <span class="badge {% if goal.goal_type == 'weight_loss' %}bg-info{% elif goal.goal_type == 'muscle_gain' %}bg-success{% elif goal.goal_type == 'endurance' %}bg-warning{% else %}bg-primary{% endif %} me-2">
+                {{ goal.get_goal_type_display }}
+            </span>
+            {% if goal.is_completed %}
+                <span class="badge bg-success me-2">Completed</span>
+            {% else %}
+                <span class="badge bg-primary me-2">Active</span>
+            {% endif %}
+            <i class="fas fa-calendar-alt me-1"></i> Created on {{ goal.start_date }}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if not goal.is_completed %}
+            <a href="{% url 'add_progress' goal.id %}" class="btn btn-primary me-2">
+                <i class="fas fa-plus-circle me-1"></i>Add Progress
+            </a>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeGoalModal">
+                <i class="fas fa-check-circle me-1"></i>Mark Complete
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-lg-4 mb-4 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Goal Details</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ goal.description }}</p>
+                
+                <ul class="list-group list-group-flush">
+                    {% if goal.target_value %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-bullseye me-2"></i>Target</span>
+                        <span class="badge bg-light text-dark">{{ goal.target_value }} {{ goal.target_unit }}</span>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-alt me-2"></i>Start Date</span>
+                        <span class="badge bg-light text-dark">{{ goal.start_date }}</span>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-check me-2"></i>Target Date</span>
+                        <span class="badge bg-light text-dark">{{ goal.target_date }}</span>
+                    </li>
+                    
+                    {% if goal.is_completed %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-trophy me-2"></i>Completed On</span>
+                        <span class="badge bg-success text-white">{{ goal.completed_date }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-clock me-2"></i>Duration</span>
+                        <span class="badge bg-light text-dark">{{ goal.start_date|timesince:goal.completed_date }}</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-hourglass-half me-2"></i>Time Remaining</span>
+                        <span class="badge bg-primary">{{ goal.days_remaining }} days</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+            
+            {% if not goal.is_completed %}
+            <div class="card-footer">
+                <div class="text-center">
+                    <h6 class="mb-2">Progress</h6>
+                    <div class="progress mb-2" style="height: 20px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ goal.progress_percentage }}%;" 
+                            aria-valuenow="{{ goal.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                            {{ goal.progress_percentage }}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progress Tracking</h5>
+            </div>
+            <div class="card-body">
+                {% if progress_entries %}
+                    <div id="progress-chart-container" class="mb-4">
+                        <div class="text-center py-3">
+                            <p class="text-muted">Progress chart visualization will be available in the next update.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Value</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entry in progress_entries %}
+                                <tr>
+                                    <td>{{ entry.date }}</td>
+                                    <td>{{ entry.value }} {% if goal.target_unit %}{{ goal.target_unit }}{% endif %}</td>
+                                    <td>{{ entry.notes|default:"" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted mb-3">No progress data available yet.</p>
+                        {% if not goal.is_completed %}
+                        <a href="{% url 'add_progress' goal.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Add First Progress Entry
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Goal Modal -->
+{% if not goal.is_completed %}
+<div class="modal fade" id="completeGoalModal" tabindex="-1" aria-labelledby="completeGoalModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completeGoalModalLabel">Mark Goal as Complete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark this goal as complete?</p>
+                <p><strong>{{ goal.title }}</strong></p>
+                {% if goal.target_value %}
+                <p>Target: {{ goal.target_value }} {{ goal.target_unit }}</p>
+                <p>Current progress: {{ goal.progress_percentage }}%</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'api_mark_goal_complete' goal.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle me-1"></i>Mark Complete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

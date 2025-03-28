@@ -1,0 +1,241 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Dashboard - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-4">
+            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+        </h1>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{% url 'create_workout' %}" class="btn btn-primary me-2">
+            <i class="fas fa-plus-circle me-1"></i>Log Workout
+        </a>
+        <a href="{% url 'create_goal' %}" class="btn btn-outline-primary">
+            <i class="fas fa-bullseye me-1"></i>Set Goal
+        </a>
+    </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card h-100 border-primary">
+            <div class="card-body text-center">
+                <h5 class="card-title text-primary">
+                    <i class="fas fa-calendar-check me-2"></i>Workouts
+                </h5>
+                <h2 class="display-4 fw-bold">{{ recent_workouts.count }}</h2>
+                <p class="text-muted">Last 30 days</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success">
+                    <i class="fas fa-bullseye me-2"></i>Active Goals
+                </h5>
+                <h2 class="display-4 fw-bold">{{ active_goals.count }}</h2>
+                <p class="text-muted">In progress</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3 mb-md-0">
+        <div class="card h-100 border-info">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info">
+                    <i class="fas fa-dumbbell me-2"></i>Exercises
+                </h5>
+                <h2 class="display-4 fw-bold" id="exercise-count">--</h2>
+                <p class="text-muted">Total performed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card h-100 border-warning">
+            <div class="card-body text-center">
+                <h5 class="card-title text-warning">
+                    <i class="fas fa-fire me-2"></i>Calories
+                </h5>
+                <h2 class="display-4 fw-bold" id="calories-burned">--</h2>
+                <p class="text-muted">Total burned</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Active Goals -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-bullseye me-2"></i>Active Goals
+                </h5>
+                <a href="{% url 'goals' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if active_goals %}
+                    {% for goal in active_goals|slice:":3" %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0">{{ goal.title }}</h6>
+                                <small class="text-muted">{{ goal.days_remaining }} days left</small>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ goal.progress_percentage }}%;" 
+                                    aria-valuenow="{{ goal.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <small class="text-muted">{{ goal.progress_percentage }}% complete</small>
+                                <a href="{% url 'goal_detail' goal.id %}" class="btn btn-sm btn-link p-0">Details</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if active_goals.count > 3 %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'goals' %}" class="btn btn-sm btn-outline-primary">View All Goals</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-3">You don't have any active goals yet.</p>
+                        <a href="{% url 'create_goal' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Set a Goal
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Workouts -->
+    <div class="col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Workouts
+                </h5>
+                <a href="{% url 'workouts' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_workouts %}
+                    <div class="list-group list-group-flush">
+                        {% for workout in recent_workouts %}
+                            <a href="{% url 'workout_detail' workout.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ workout.title }}</h6>
+                                    <small class="text-muted">{{ workout.date }}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small>
+                                        <i class="fas fa-clock me-1"></i>{{ workout.duration }} min
+                                        {% if workout.calories_burned %}
+                                            <span class="ms-2"><i class="fas fa-fire me-1"></i>{{ workout.calories_burned }} cal</span>
+                                        {% endif %}
+                                    </small>
+                                    <span class="badge bg-primary rounded-pill">{{ workout.exercises.count }} exercises</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-3">You haven't logged any workouts yet.</p>
+                        <a href="{% url 'create_workout' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Log a Workout
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Progress Charts -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Progress Tracking</h5>
+            </div>
+            <div class="card-body">
+                <div id="progress-chart-container">
+                    {% if progress_data %}
+                        <canvas id="progressChart" height="250"></canvas>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted mb-3">No progress data available yet.</p>
+                            <p class="text-muted">Start tracking your progress by adding data to your goals.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workout Plans -->
+    <div class="col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Workout Plans</h5>
+                <a href="{% url 'workout_plans' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body">
+                {% if workout_plans %}
+                    <div class="list-group list-group-flush">
+                        {% for plan in workout_plans %}
+                            <a href="{% url 'workout_plan_detail' plan.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ plan.title }}</h6>
+                                    <span class="badge bg-primary">{{ plan.difficulty }}</span>
+                                </div>
+                                <p class="mb-1 text-truncate">{{ plan.description }}</p>
+                                <small class="text-muted">{{ plan.duration_weeks }} week plan</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-3">You don't have any workout plans yet.</p>
+                        <a href="{% url 'create_workout_plan' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Create Plan
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch workout stats
+        fetch('/api/workout-stats/?days=30')
+            .then(response => response.json())
+            .then(data => {
+                // Update stats
+                document.getElementById('exercise-count').textContent = data.total_exercises || 0;
+                document.getElementById('calories-burned').textContent = data.total_calories || 0;
+            })
+            .catch(error => console.error('Error fetching workout stats:', error));
+        
+        // Progress chart will be implemented in a future update
+        {% if progress_data %}
+        // For now, we'll just display a message that charts are coming soon
+        document.getElementById('progress-chart-container').innerHTML = `
+            <div class="text-center py-5">
+                <p class="text-muted mb-3">Progress charts are coming soon!</p>
+                <p class="text-muted">Your progress data is being tracked and will be visualized in the next update.</p>
+            </div>
+        `;
+        {% endif %}
+    });
+</script>
+{% endblock %}

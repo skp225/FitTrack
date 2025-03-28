@@ -1,0 +1,62 @@
+[
+    {
+        "model": "fitness.exercise",
+        "fields": {
+            "id": 1,
+            "name": "Bench Press",
+            "description": "Lie on a flat bench and press the bar upwards, fully extending your arms.",
+            "muscle_group": "chest",
+            "difficulty": "intermediate",
+            "equipment_required": "Barbell, Bench",
+            "demonstration_url": "https://www.youtube.com/watch?v=demorbenchpress"
+        }
+    },
+    {
+        "model": "fitness.exercise",
+        "fields": {
+            "id": 2,
+            "name": "Pull-ups",
+            "description": "Hang from the pull-up bar and pull yourself up until your chin is above the bar.",
+            "muscle_group": "back",
+            "difficulty": "advanced",
+            "equipment_required": "Pull-up Bar",
+            "demonstration_url": "https://www.youtube.com/watch?v=dempullups"
+        }
+    },
+    {
+        "model": "fitness.exercise",
+        "fields": {
+            "id": 3,
+            "name": "Squats",
+            "description": "Stand with feet shoulder-width apart, then bend knees and lower body until thighs are parallel to ground.",
+            "muscle_group": "legs",
+            "difficulty": "beginner",
+            "equipment_required": "None or Barbell",
+            "demonstration_url": "https://www.youtube.com/watch?v=demsquats"
+        }
+    },
+    {
+        "model": "fitness.exercise",
+        "fields": {
+            "id": 4,
+            "name": "Push-ups",
+            "description": "Start in plank position, lower body to ground, then push back up.",
+            "muscle_group": "chest",
+            "difficulty": "beginner",
+            "equipment_required": "None",
+            "demonstration_url": "https://www.youtube.com/watch?v=demopushups"
+        }
+    },
+    {
+        "model": "fitness.exercise",
+        "fields": {
+            "id": 5,
+            "name": "Deadlift",
+            "description": "Bend down and lift the bar with an overhand grip, keeping back straight.",
+            "muscle_group": "legs",
+            "difficulty": "advanced",
+            "equipment_required": "Barbell",
+            "demonstration_url": "https://www.youtube.com/watch?v=demdeadlift"
+        }
+    }
+]

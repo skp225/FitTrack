@@ -1,0 +1,251 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Log Workout - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-4">
+            <i class="fas fa-plus-circle me-2"></i>Log Workout
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Workout Details</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" id="workoutForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Workout Title</label>
+                        <input type="text" name="title" id="title" class="form-control" placeholder="e.g., Morning Run, Chest Day, etc." required>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" name="date" id="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="duration" class="form-label">Duration (minutes)</label>
+                            <input type="number" name="duration" id="duration" class="form-control" min="1" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="calories_burned" class="form-label">Calories Burned (optional)</label>
+                        <input type="number" name="calories_burned" id="calories_burned" class="form-control" min="0">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (optional)</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Any additional notes about your workout"></textarea>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h5 class="mb-3">Exercises</h5>
+                    
+                    <div id="exercises-container">
+                        <!-- Exercise entries will be added here -->
+                        <div class="exercise-entry card mb-3">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Exercise</label>
+                                        <select name="exercise_id" class="form-select" required>
+                                            <option value="" selected disabled>Select an exercise</option>
+                                            {% for exercise in exercises %}
+                                            <option value="{{ exercise.id }}">{{ exercise.name }} ({{ exercise.get_muscle_group_display }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-exercise ms-auto" disabled>
+                                            <i class="fas fa-trash me-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Sets</label>
+                                        <input type="number" name="sets" class="form-control" min="1" value="3" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Reps</label>
+                                        <input type="number" name="reps" class="form-control" min="1" value="10" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Weight (kg, optional)</label>
+                                        <input type="number" name="weight" class="form-control" min="0" step="0.5">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <button type="button" id="add-exercise" class="btn btn-outline-primary">
+                            <i class="fas fa-plus-circle me-1"></i>Add Another Exercise
+                        </button>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save me-2"></i>Save Workout
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-check-circle me-2 text-success"></i>Be Specific</h6>
+                        <p class="mb-0 small">Give your workout a descriptive title that helps you remember what you did.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-check-circle me-2 text-success"></i>Track Progress</h6>
+                        <p class="mb-0 small">Record weights, sets, and reps accurately to track your progress over time.</p>
+                    </li>
+                    <li class="list-group-item">
+                        <h6><i class="fas fa-check-circle me-2 text-success"></i>Add Notes</h6>
+                        <p class="mb-0 small">Include how you felt, any PRs achieved, or areas for improvement in the notes section.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Workouts</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_workouts %}
+                    <div class="list-group list-group-flush">
+                        {% for workout in recent_workouts %}
+                            <a href="{% url 'workout_detail' workout.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ workout.title }}</h6>
+                                    <small>{{ workout.date }}</small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ workout.duration }} min
+                                    <span class="mx-1">|</span>
+                                    <i class="fas fa-dumbbell me-1"></i>{{ workout.exercises.count }} exercises
+                                </small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No recent workouts yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set maximum date for workout date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date').setAttribute('max', today);
+        
+        // Add exercise button functionality
+        const addExerciseBtn = document.getElementById('add-exercise');
+        const exercisesContainer = document.getElementById('exercises-container');
+        
+        // Function to create a new exercise entry
+        function createExerciseEntry() {
+            // Clone the first exercise entry
+            const firstEntry = exercisesContainer.querySelector('.exercise-entry');
+            const newEntry = firstEntry.cloneNode(true);
+            
+            // Reset form values
+            const selects = newEntry.querySelectorAll('select');
+            const inputs = newEntry.querySelectorAll('input');
+            
+            selects.forEach(select => {
+                select.selectedIndex = 0;
+            });
+            
+            inputs.forEach(input => {
+                if (input.name === 'sets') {
+                    input.value = '3';
+                } else if (input.name === 'reps') {
+                    input.value = '10';
+                } else if (input.name === 'weight') {
+                    input.value = '';
+                }
+            });
+            
+            // Enable remove button
+            const removeBtn = newEntry.querySelector('.remove-exercise');
+            removeBtn.disabled = false;
+            
+            // Add event listener to remove button
+            removeBtn.addEventListener('click', function() {
+                newEntry.remove();
+                updateFormNames();
+            });
+            
+            // Append the new entry
+            exercisesContainer.appendChild(newEntry);
+            
+            // Update form field names
+            updateFormNames();
+        }
+        
+        // Function to update form field names with proper indices
+        function updateFormNames() {
+            const entries = exercisesContainer.querySelectorAll('.exercise-entry');
+            
+            entries.forEach((entry, index) => {
+                const selects = entry.querySelectorAll('select');
+                const inputs = entry.querySelectorAll('input');
+                
+                selects.forEach(select => {
+                    if (select.name === 'exercise_id') {
+                        select.name = `exercise_id`;
+                    }
+                });
+                
+                inputs.forEach(input => {
+                    if (input.name === 'sets') {
+                        input.name = `sets`;
+                    } else if (input.name === 'reps') {
+                        input.name = `reps`;
+                    } else if (input.name === 'weight') {
+                        input.name = `weight`;
+                    }
+                });
+                
+                // Enable/disable remove button based on number of entries
+                const removeBtn = entry.querySelector('.remove-exercise');
+                removeBtn.disabled = entries.length <= 1;
+            });
+        }
+        
+        // Add event listener to add exercise button
+        addExerciseBtn.addEventListener('click', createExerciseEntry);
+        
+        // Initialize form field names
+        updateFormNames();
+    });
+</script>
+{% endblock %}

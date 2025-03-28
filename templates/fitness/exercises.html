@@ -1,0 +1,118 @@
+{% extends 'fitness/base.html' %}
+
+{% block title %}Exercises - FitTrack{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold mb-4">
+            <i class="fas fa-dumbbell me-2"></i>Exercise Library
+        </h1>
+    </div>
+    <div class="col-md-4">
+        <div class="d-flex justify-content-end">
+            <form method="get" class="d-flex">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search exercises" value="{{ request.GET.search|default:'' }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <ul class="nav nav-pills card-header-pills">
+                    <li class="nav-item">
+                        <a class="nav-link {% if not muscle_group %}active{% endif %}" href="{% url 'exercises' %}">All</a>
+                    </li>
+                    {% for key, value in muscle_groups.items %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if muscle_group == key %}active{% endif %}" href="{% url 'exercises' %}?muscle_group={{ key }}">{{ value }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Filter</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="get">
+                                    {% if request.GET.search %}
+                                    <input type="hidden" name="search" value="{{ request.GET.search }}">
+                                    {% endif %}
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Difficulty</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="difficulty" id="all" value="" {% if not difficulty %}checked{% endif %}>
+                                            <label class="form-check-label" for="all">All Levels</label>
+                                        </div>
+                                        {% for key, value in difficulties.items %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="difficulty" id="{{ key }}" value="{{ key }}" {% if difficulty == key %}checked{% endif %}>
+                                            <label class="form-check-label" for="{{ key }}">{{ value }}</label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-9">
+                        {% if exercises %}
+                            <div class="row">
+                                {% for exercise in exercises %}
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">{{ exercise.name }}</h5>
+                                            <span class="badge {% if exercise.difficulty == 'beginner' %}bg-success{% elif exercise.difficulty == 'intermediate' %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ exercise.get_difficulty_display }}
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">{{ exercise.description|truncatechars:100 }}</p>
+                                            <p class="mb-0">
+                                                <span class="badge bg-light text-dark">{{ exercise.get_muscle_group_display }}</span>
+                                                {% if exercise.equipment_required %}
+                                                <span class="badge bg-light text-dark">{{ exercise.equipment_required }}</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="{% url 'exercise_detail' exercise.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-info-circle me-1"></i>View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <p class="text-muted mb-3">No exercises found matching your criteria.</p>
+                                <a href="{% url 'exercises' %}" class="btn btn-primary">Clear Filters</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
